@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "eslint": "^9.7.0",
+    "vite-plugin-eslint": "^1.8.1"
+  }
+}
