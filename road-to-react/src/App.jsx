@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import * as React from "react";
 import { useReducer } from "react";
 
+const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
+
 export function useSemiPersistentState({ key, initialState }) {
   const [value, setValue] = useState(
     localStorage.getItem("key") || initialState
@@ -78,15 +80,15 @@ function App() {
     isLoading: false,
     isError: false,
   });
-
+  
   useEffect(() => {
     dispatchStories({ type: "STORIES_FETCH_INIT" });
-
-    getAsyncStories()
+    fetch(`${API_ENDPOINT}react`) // B
+    .then((response) => response.json()) // 
       .then((result) => {
         dispatchStories({
           type: "STORIES_FETCH_SUCCESS",
-          payload: result.data.stories,
+         payload: result.hits, // 
         });
       })
       .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }));
