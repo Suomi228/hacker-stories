@@ -33,16 +33,24 @@ function App() {
       objectID: 1,
     },
   ];
+
   const getAsyncStories = () =>
     new Promise((resolve) =>
       setTimeout(() => resolve({ data: { stories: initialStories } }), 2000)
     );
   const [stories, setStories] = useState([]);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
   useEffect(() => {
-    getAsyncStories().then((result) => {
-      setStories(result.data.stories);
-    });
+    setIsLoading(true);
+    getAsyncStories()
+      .then((result) => {
+        setStories(result.data.stories);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsError(true);
+      });
   }, []);
 
   const handleRemoveStory = (item) => {
@@ -50,6 +58,9 @@ function App() {
       (story) => item.objectID !== story.objectID
     );
     setStories(newStories);
+  };
+  const handleClick = () => {
+    console.log("Click");
   };
 
   const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "React");
@@ -59,7 +70,6 @@ function App() {
   const searchedStories = stories.filter((story) => {
     return story.title.toLowerCase().includes(searchTerm.toLowerCase());
   });
-
   return (
     <div>
       <h1>My Hacker Stories</h1>
@@ -73,12 +83,15 @@ function App() {
       </InputWithLabel>
 
       <hr />
-      {searchedStories.length > 0 ? (
-        <List list={searchedStories} onRemoveItem={handleRemoveStory} />
+
+      {isError && <p>Something went wrong ...</p>}
+
+      {isLoading ? (
+        <p>Loading ...</p>
       ) : (
-        <p>No stories found with the given title.</p>
+        <List list={searchedStories} onRemoveItem={handleRemoveStory} />
       )}
-      <p>
+      <p onClick={handleClick}>
         Searching for <strong>{searchTerm}</strong>.
       </p>
     </div>
