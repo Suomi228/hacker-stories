@@ -3,6 +3,7 @@ import { useState } from "react";
 import "./App.css";
 import { useEffect } from "react";
 import * as React from "react";
+import { useReducer } from "react";
 
 export function useSemiPersistentState({ key, initialState }) {
   const [value, setValue] = useState(
@@ -38,27 +39,43 @@ function App() {
     new Promise((resolve) =>
       setTimeout(() => resolve({ data: { stories: initialStories } }), 2000)
     );
-  const [stories, setStories] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const storiesReducer = (state, action) => {
+    switch (action.type) {
+      case "SET_STORIES":
+        return action.payload;
+      case "REMOVE_STORY":
+        return state.filter(
+          (story) => action.payload.objectID !== story.objectID
+        );
+      default:
+        throw new Error();
+    }
+  };
+
+  const [stories, dispatchStories] = useReducer(storiesReducer, []);
+
   const [isError, setIsError] = useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
   useEffect(() => {
     setIsLoading(true);
     getAsyncStories()
       .then((result) => {
-        setStories(result.data.stories);
+        dispatchStories({
+          type: "SET_STORIES",
+          payload: result.data.stories,
+        });
         setIsLoading(false);
       })
-      .catch(() => {
-        setIsError(true);
-      });
+      .catch(() => setIsError(true));
   }, []);
 
   const handleRemoveStory = (item) => {
-    const newStories = stories.filter(
-      (story) => item.objectID !== story.objectID
-    );
-    setStories(newStories);
+    dispatchStories({
+      type: "REMOVE_STORY",
+      payload: item,
+    });
   };
+
   const handleClick = () => {
     console.log("Click");
   };
