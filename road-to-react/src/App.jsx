@@ -80,10 +80,12 @@ function App() {
     isLoading: false,
     isError: false,
   });
-  
+  const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "React");
+
   useEffect(() => {
+    if (!searchTerm) return;
     dispatchStories({ type: "STORIES_FETCH_INIT" });
-    fetch(`${API_ENDPOINT}react`) // B
+    fetch(`${API_ENDPOINT}${searchTerm}`) // B
     .then((response) => response.json()) // 
       .then((result) => {
         dispatchStories({
@@ -92,7 +94,7 @@ function App() {
         });
       })
       .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }));
-  }, []);
+  }, [searchTerm]);
 
   const handleRemoveStory = (item) => {
     dispatchStories({
@@ -105,7 +107,6 @@ function App() {
     console.log("Click");
   };
 
-  const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "React");
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -133,7 +134,7 @@ function App() {
       {stories.isLoading ? (
         <p>Loading ...</p>
       ) : (
-        <List list={searchedStories} onRemoveItem={handleRemoveStory} />
+        <List list={stories.data} onRemoveItem={handleRemoveStory} />
       )}
       <p onClick={handleClick}>
         Searching for <strong>{searchTerm}</strong>.
