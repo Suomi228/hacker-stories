@@ -4,7 +4,7 @@ import "./App.css";
 import { useEffect } from "react";
 import * as React from "react";
 import { useReducer } from "react";
-
+import axios from 'axios';
 const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 
 export function useSemiPersistentState({ key, initialState }) {
@@ -18,29 +18,6 @@ export function useSemiPersistentState({ key, initialState }) {
   return [value, setValue];
 }
 function App() {
-  const initialStories = [
-    {
-      title: "React",
-      url: "https://reactjs.org/",
-      author: "Jordan Walke",
-      num_comments: 3,
-      points: 4,
-      objectID: 0,
-    },
-    {
-      title: "Redux",
-      url: "https://redux.js.org/",
-      author: "Dan Abramov, Andrew Clark",
-      num_comments: 2,
-      points: 5,
-      objectID: 1,
-    },
-  ];
-
-  const getAsyncStories = () =>
-    new Promise((resolve) =>
-      setTimeout(() => resolve({ data: { stories: initialStories } }), 2000)
-    );
   const storiesReducer = (state, action) => {
     switch (action.type) {
       case "STORIES_FETCH_INIT":
@@ -82,14 +59,14 @@ function App() {
   });
   const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "React");
   const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
+  
   const handleFetchStories = React.useCallback(() => {
     dispatchStories({ type: "STORIES_FETCH_INIT" });
-    fetch(url) // B
-      .then((response) => response.json()) //
+    axios.get(url) // B/
       .then((result) => {
         dispatchStories({
           type: "STORIES_FETCH_SUCCESS",
-          payload: result.hits, //
+          payload: result.data.hits, //
         });
       })
       .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }));
@@ -117,10 +94,6 @@ function App() {
   const handleSearchSubmit = () => {
     setUrl(`${API_ENDPOINT}${searchTerm}`);
   };
-
-  const searchedStories = stories.data.filter((story) => {
-    return story.title.toLowerCase().includes(searchTerm.toLowerCase());
-  });
 
   return (
     <div>
