@@ -4,7 +4,7 @@ import "./App.css";
 import { useEffect } from "react";
 import * as React from "react";
 import { useReducer } from "react";
-import axios from 'axios';
+import axios from "axios";
 const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 
 export function useSemiPersistentState({ key, initialState }) {
@@ -59,19 +59,19 @@ function App() {
   });
   const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "React");
   const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
-  
-  const handleFetchStories = React.useCallback(() => {
-    dispatchStories({ type: "STORIES_FETCH_INIT" });
-    axios.get(url) // B/
-      .then((result) => {
-        dispatchStories({
-          type: "STORIES_FETCH_SUCCESS",
-          payload: result.data.hits, //
-        });
-      })
-      .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }));
-  }, [url]);
 
+  const handleFetchStories = React.useCallback(async () => {
+    dispatchStories({ type: "STORIES_FETCH_INIT" });
+    try {
+      const result = await axios.get(url);
+      dispatchStories({
+        type: "STORIES_FETCH_SUCCESS",
+        payload: result.data.hits,
+      });
+    } catch {
+      dispatchStories({ type: "STORIES_FETCH_FAILURE" });
+    }
+  }, [url]);
   useEffect(() => {
     handleFetchStories();
   }, [handleFetchStories]);
