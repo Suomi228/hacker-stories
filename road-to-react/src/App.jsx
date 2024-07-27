@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import * as React from "react";
 import { useReducer } from "react";
 
-const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
+const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 
 export function useSemiPersistentState({ key, initialState }) {
   const [value, setValue] = useState(
@@ -82,19 +82,24 @@ function App() {
   });
   const [searchTerm, setSearchTerm] = useSemiPersistentState("search", "React");
 
-  useEffect(() => {
+  const handleFetchStories = React.useCallback(() => {
     if (!searchTerm) return;
     dispatchStories({ type: "STORIES_FETCH_INIT" });
     fetch(`${API_ENDPOINT}${searchTerm}`) // B
-    .then((response) => response.json()) // 
+      .then((response) => response.json()) //
       .then((result) => {
         dispatchStories({
           type: "STORIES_FETCH_SUCCESS",
-         payload: result.hits, // 
+          payload: result.hits, //
         });
       })
       .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }));
   }, [searchTerm]);
+
+  useEffect(() => {
+    handleFetchStories();
+    
+  }, [handleFetchStories]);
 
   const handleRemoveStory = (item) => {
     dispatchStories({
